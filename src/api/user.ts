@@ -1,4 +1,5 @@
 import { http } from "@/utils/http";
+import { baseUrlApi } from "./utils";
 
 export type UserResult = {
   success: boolean;
@@ -28,12 +29,27 @@ export type RefreshTokenResult = {
   };
 };
 
+export type CaptchasResult = {
+  success: boolean;
+  /** 验证码 */
+  data: {
+    text: string;
+    svg: string;
+  };
+};
+
 /** 登录 */
 export const getLogin = (data?: object) => {
-  return http.request<UserResult>("post", "/login", { data });
+  return http.request<UserResult>("post", baseUrlApi("login"), { data });
 };
 
 /** 刷新token */
 export const refreshTokenApi = (data?: object) => {
-  return http.request<RefreshTokenResult>("post", "/refreshToken", { data });
+  return http.request<RefreshTokenResult>("post", "/refreshToken", {
+    data
+  });
+};
+
+export const getCaptcha = () => {
+  return http.request<string>("get", baseUrlApi("captcha"));
 };
