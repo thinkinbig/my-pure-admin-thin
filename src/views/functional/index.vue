@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, reactive } from "vue";
 import { UploadFilled } from "@element-plus/icons-vue";
-import { ElMessageBox, ElMessage, ElLoading } from "element-plus";
+import { ElMessageBox, ElMessage, ElLoading, UploadFile } from "element-plus";
+import { formFunction } from "@/api/function";
 
 enum FileUploadEnum {
   input = "input",
@@ -15,7 +16,16 @@ defineOptions({
   name: "Functional"
 });
 
-const form = reactive({
+interface UplaodForm {
+  name: string;
+  input: UploadFile;
+  opertion: UploadFile;
+  standard: UploadFile;
+  valve_characteristic: UploadFile;
+  cv: UploadFile;
+}
+
+const form: UplaodForm = reactive({
   name: "输出.xlsx",
   input: undefined,
   opertion: undefined,
@@ -46,7 +56,8 @@ function handleExceed(files, fileList) {
 }
 
 function handleChange(file, file_upload: FileUploadEnum) {
-  form[file_upload] = file.raw;
+  console.log(file);
+  form[file_upload] = file;
 }
 
 function handleRemove(file_upload: FileUploadEnum) {
@@ -60,17 +71,26 @@ function submitUpload() {
     text: "正在上传文件...",
     background: "rgba(0, 0, 0, 0.7)"
   });
-  for (const key in form) {
-    formData.append(key, form[key]);
-  }
-  // TODO: upload formData
-  setTimeout(() => {
-    loading.close();
-    ElMessage({
-      message: "上传成功",
-      type: "success"
+  formData.append("name", form.name);
+  formData.append("input", form.input.raw, form.input.name);
+  formData.append("opertion", form.opertion.raw, form.opertion.name);
+  formData.append("standard", form.standard.raw, form.standard.name);
+  formData.append(
+    "valve_characteristic",
+    form.valve_characteristic.raw,
+    form.valve_characteristic.name
+  );
+  formData.append("cv", form.cv.raw, form.cv.name);
+  formFunction(formData)
+    .then(() => {
+      ElMessage.success("上传成功");
+    })
+    .catch(error => {
+      ElMessage.error(error);
+    })
+    .finally(() => {
+      loading.close();
     });
-  }, 2000);
 }
 </script>
 
