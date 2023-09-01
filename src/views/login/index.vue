@@ -54,10 +54,19 @@ const onLogin = async (formEl: FormInstance | undefined) => {
               router.push(getTopMenu(true).path);
               message("登录成功", { type: "success" });
             });
+          } else {
+            message("登录失败, 用户名或密码错误", { type: "error" });
           }
+        })
+        .catch(() => {
+          message("登录失败", { type: "error" });
+        })
+        .finally(() => {
+          loading.value = false;
         });
     } else {
       loading.value = false;
+      message("请检查输入项", { type: "error" });
       return fields;
     }
   });

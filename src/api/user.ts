@@ -38,6 +38,18 @@ export type CaptchasResult = {
   };
 };
 
+export type LoginHistoryResult = {
+  success: boolean;
+  data: Array<{
+    /** 记录id */
+    id: number;
+    /** 用户名 */
+    username: string;
+    /** 登录时间 */
+    login_time: string;
+  }>;
+};
+
 /** 登录 */
 export const getLogin = (data?: object) => {
   return http.request<UserResult>("post", baseUrlApi("login"), { data });
@@ -52,4 +64,8 @@ export const refreshTokenApi = (data?: object) => {
 
 export const getCaptcha = () => {
   return http.request<string>("get", baseUrlApi("captcha"));
+};
+
+export const getUserLoginHistory = () => {
+  return http.request<LoginHistoryResult>("get", baseUrlApi("loginHistory"));
 };

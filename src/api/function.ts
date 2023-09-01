@@ -1,33 +1,23 @@
 import { http } from "@/utils/http";
 import { baseUrlApi, baseUrlApi2 } from "./utils";
+import { downloadBlob } from "@/utils/file";
 
-interface VerifyResponse {
-  success: boolean;
-  message: string;
-}
-
-export const formFunction = formData => {
+export const formFunction = (formData: FormData, filename: string) => {
   return http
-    .request("get", baseUrlApi("verifyToken"))
-    .then((res: VerifyResponse) =>
-      res.success
-        ? http.post(baseUrlApi2("formFunction"), formData, {
-            headers: {
-              "Content-Type": "multipart/form-data"
-            },
-            maxBodyLength: Infinity
-          })
-        : Promise.reject(res.message)
+    .get(baseUrlApi("verifyToken"))
+    .then(() =>
+      http.post(baseUrlApi2("formFunction"), undefined, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        },
+        maxBodyLength: Infinity,
+        data: formData
+      })
     )
-    .catch(err => {
-      console.log(err);
-      return false;
-    });
-  // return http.post(baseUrlApi2("formFunction"), formData, {
-  //   headers: {
-  //     "Content-Type": "multipart/form-data"
-  //   },
-  //   maxBodyLength: Infinity,
-  //   data: formData
-  // });
+    .then((res: Blob) =>
+      downloadBlob(
+        new Blob([res], { type: "application/vnd.ms-excel" }),
+        filename
+      )
+    );
 };

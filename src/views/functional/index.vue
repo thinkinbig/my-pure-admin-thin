@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, reactive } from "vue";
 import { UploadFilled } from "@element-plus/icons-vue";
-import { ElMessageBox, ElMessage, ElLoading, UploadFile } from "element-plus";
+import { ElMessageBox, ElLoading, UploadFile } from "element-plus";
 import { formFunction } from "@/api/function";
+import { message } from "@/utils/message";
 
 enum FileUploadEnum {
   input = "input",
-  opertion = "opertion",
+  operation = "operation",
   standard = "standard",
   valve_characteristic = "valve_characteristic",
   cv = "cv"
@@ -19,7 +20,7 @@ defineOptions({
 interface UplaodForm {
   name: string;
   input: UploadFile;
-  opertion: UploadFile;
+  operation: UploadFile;
   standard: UploadFile;
   valve_characteristic: UploadFile;
   cv: UploadFile;
@@ -28,7 +29,7 @@ interface UplaodForm {
 const form: UplaodForm = reactive({
   name: "输出.xlsx",
   input: undefined,
-  opertion: undefined,
+  operation: undefined,
   standard: undefined,
   valve_characteristic: undefined,
   cv: undefined
@@ -56,7 +57,6 @@ function handleExceed(files, fileList) {
 }
 
 function handleChange(file, file_upload: FileUploadEnum) {
-  console.log(file);
   form[file_upload] = file;
 }
 
@@ -73,7 +73,7 @@ function submitUpload() {
   });
   formData.append("name", form.name);
   formData.append("input", form.input.raw, form.input.name);
-  formData.append("opertion", form.opertion.raw, form.opertion.name);
+  formData.append("operation", form.operation.raw, form.operation.name);
   formData.append("standard", form.standard.raw, form.standard.name);
   formData.append(
     "valve_characteristic",
@@ -81,12 +81,12 @@ function submitUpload() {
     form.valve_characteristic.name
   );
   formData.append("cv", form.cv.raw, form.cv.name);
-  formFunction(formData)
+  formFunction(formData, form.name)
     .then(() => {
-      ElMessage.success("上传成功");
+      message("上传成功", { type: "success" });
     })
     .catch(error => {
-      ElMessage.error(error);
+      message(`上传失败 ${error}`, { type: "error" });
     })
     .finally(() => {
       loading.close();
@@ -122,8 +122,8 @@ function submitUpload() {
         accept=".xlsx,.xls"
         :limit="1"
         :on-exceed="handleExceed"
-        :on-change="file => handleChange(file, FileUploadEnum.opertion)"
-        :on-remove="() => handleRemove(FileUploadEnum.opertion)"
+        :on-change="file => handleChange(file, FileUploadEnum.operation)"
+        :on-remove="() => handleRemove(FileUploadEnum.operation)"
         action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
         :auto-upload="false"
       >

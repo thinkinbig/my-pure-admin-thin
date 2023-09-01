@@ -17,7 +17,7 @@ import { useUserStoreHook } from "@/store/modules/user";
 // 相关配置请参考：www.axios-js.com/zh-cn/docs/#axios-request-config-1
 const defaultConfig: AxiosRequestConfig = {
   // 请求超时时间
-  timeout: 10000,
+  timeout: 100000,
   headers: {
     Accept: "application/json, text/plain, */*",
     "Content-Type": "application/json",
@@ -137,6 +137,28 @@ class PureHttp {
       (error: PureHttpError) => {
         const $error = error;
         $error.isCancelRequest = Axios.isCancel($error);
+
+        // 请求过期时拦截401状态码，刷新token
+        if ($error.response && $error.response.status === 401) {
+          const config = $error.config;
+          if (!PureHttp.isRefreshing) {
+            PureHttp.isRefreshing = true;
+            // token过期刷新
+            useUserStoreHook()
+              .handRefreshToken({ refreshToken: getToken().refreshToken })
+              .then(res => {
+                const token = res.data.accessToken;
+                config.headers["Authorization"] = formatToken(token);
+                PureHttp.requests.forEach(cb => cb(token));
+                PureHttp.requests = [];
+              })
+              .finally(() => {
+                PureHttp.isRefreshing = false;
+              });
+          }
+          return PureHttp.retryOriginalRequest(config);
+        }
+
         // 关闭进度条动画
         NProgress.done();
         // 所有的响应异常 区分来源为取消请求/非取消请求
